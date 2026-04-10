@@ -31,8 +31,8 @@ class Linear:
         
         # Store input for backward pass
         self.A = A
-        
-        raise NotImplementedError
+
+        return A @ self.W.T + self.b
 
     def backward(self, dLdZ):
         """
@@ -42,10 +42,9 @@ class Linear:
         # TODO: Implement backward pass
 
         # Compute gradients
-        self.dLdA = NotImplementedError
-        self.dLdW = NotImplementedError
-        self.dLdb = NotImplementedError
-        self.dLdA = NotImplementedError
-        
+        self.dLdW = dLdZ.reshape(-1, dLdZ.shape[-1]).T @ self.A.reshape(-1, self.A.shape[-1])
+        self.dLdb = dLdZ.reshape(-1, dLdZ.shape[-1]).sum(axis=0)
+        self.dLdA = dLdZ @ self.W
+
         # Return gradient of loss wrt input
-        raise NotImplementedError
+        return self.dLdA

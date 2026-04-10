@@ -51,27 +51,29 @@ class SelfAttentionDecoderLayer(nn.Module):
         ''' 
         super().__init__()
         # TODO: Implement __init__
-       
-        # TODO: Initialize the sublayers      
-        raise NotImplementedError # Remove once implemented
+
+        # TODO: Initialize the sublayers
+        self.self_attn = SelfAttentionLayer(d_model, num_heads, dropout)
+        self.ffn = FeedForwardLayer(d_model, d_ff, dropout)
 
     def forward(self, x: torch.Tensor, key_padding_mask: Optional[torch.Tensor] = None, attn_mask: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
         '''
         Forward pass for the DecoderLayer1.
         Args:
-            x (torch.Tensor): The input tensor. shape: (batch_size, seq_len, d_model)   
+            x (torch.Tensor): The input tensor. shape: (batch_size, seq_len, d_model)
             key_padding_mask (torch.Tensor): The padding mask for the decoder. shape: (batch_size, seq_len)
             attn_mask (torch.Tensor): The self-attention mask. shape: (seq_len, seq_len)
 
         Returns:
             x (torch.Tensor): The output tensor. shape: (batch_size, seq_len, num_classes)
-            mha_attn_weights (torch.Tensor): The attention weights. shape: (batch_size, seq_len, seq_len)   
+            mha_attn_weights (torch.Tensor): The attention weights. shape: (batch_size, seq_len, seq_len)
         '''
         # TODO: Implement forward: Follow the figure in the writeup
-
+        x, attn_weights = self.self_attn(x, key_padding_mask=key_padding_mask, attn_mask=attn_mask)
+        x = self.ffn(x)
 
         # TODO: Return the output tensor and attention weights
-        raise NotImplementedError # Remove once implemented
+        return x, attn_weights
 
 ## -------------------------------------------------------------------------------------------------    
 class CrossAttentionDecoderLayer(nn.Module):
@@ -91,26 +93,30 @@ class CrossAttentionDecoderLayer(nn.Module):
         super().__init__()
         # TODO: Implement __init__
 
-        # TODO: Initialize the sublayers  
-        raise NotImplementedError # Remove once implemented
+        # TODO: Initialize the sublayers
+        self.self_attn = SelfAttentionLayer(d_model, num_heads, dropout)
+        self.cross_attn = CrossAttentionLayer(d_model, num_heads, dropout)
+        self.ffn = FeedForwardLayer(d_model, d_ff, dropout)
 
     def forward(self, x: torch.Tensor, enc_output: torch.Tensor, dec_key_padding_mask: Optional[torch.Tensor] = None, enc_key_padding_mask: Optional[torch.Tensor] = None, attn_mask: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         '''
         Forward pass for the CrossAttentionDecoderLayer.
         Args:
-            x (torch.Tensor): The input tensor. shape: (batch_size, seq_len, d_model)   
+            x (torch.Tensor): The input tensor. shape: (batch_size, seq_len, d_model)
             enc_output (torch.Tensor): The encoder output. shape: (batch_size, seq_len, d_model)
             dec_key_padding_mask (Optional[torch.Tensor]): The padding mask for the decoder input. shape: (batch_size, seq_len)
             enc_key_padding_mask (Optional[torch.Tensor]): The padding mask for the encoder output. shape: (batch_size, seq_len')
             attn_mask (Optional[torch.Tensor]): The self-attention mask for the decoder input. shape: (seq_len, seq_len)
         Returns:
             x (torch.Tensor): The output tensor. shape: (batch_size, seq_len, d_model)
-            self_attn_weights (torch.Tensor): The attention weights. shape: (batch_size, seq_len, seq_len)   
-            cross_attn_weights (torch.Tensor): The attention weights. shape: (batch_size, seq_len, seq_len)    
+            self_attn_weights (torch.Tensor): The attention weights. shape: (batch_size, seq_len, seq_len)
+            cross_attn_weights (torch.Tensor): The attention weights. shape: (batch_size, seq_len, seq_len)
         '''
         # TODO: Implement forward: Follow the figure in the writeup
+        x, self_attn_weights = self.self_attn(x, key_padding_mask=dec_key_padding_mask, attn_mask=attn_mask)
+        x, cross_attn_weights = self.cross_attn(x, enc_output, key_padding_mask=enc_key_padding_mask)
+        x = self.ffn(x)
 
-
-        # TODO: Return the output tensor and attention weights    
-        raise NotImplementedError # Remove once implemented
+        # TODO: Return the output tensor and attention weights
+        return x, self_attn_weights, cross_attn_weights
 ## -------------------------------------------------------------------------------------------------    
