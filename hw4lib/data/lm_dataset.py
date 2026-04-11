@@ -67,7 +67,13 @@ class LMDataset(Dataset):
         self.text_files = sorted(os.listdir(self.text_dir))
 
         # TODO: Take subset
-        subset_size = int(config['subset']) if config.get('subset') is not None else None
+        subset_val = config.get('subset')
+        if subset_val is None or subset_val == 1.0:
+            subset_size = None
+        elif isinstance(subset_val, float) and subset_val < 1.0:
+            subset_size = int(len(self.text_files) * subset_val)
+        else:
+            subset_size = int(subset_val)
         self.text_files = self.text_files[:subset_size] if subset_size is not None else self.text_files
 
         # Initialize lists to store transcripts
